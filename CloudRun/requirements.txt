@@ -1,0 +1,3 @@
+apache-airflow-providers-google==6.8.0
+google-cloud-pubsub
+sqlalchemy-spanner==<compatible-version>
