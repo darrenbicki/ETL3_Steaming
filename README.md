@@ -6,11 +6,11 @@ This project implements a **real-time ETL (Extract–Transform–Load) streaming
 - generates random stock trade events by picking a stock ticker (AAPL, GOOGL, MSFT, AMZN) and assigning it a random price. ( This can be changed to use real stock data , random data is generated here for simplicity )
 -- Each event looks like:
 
-     {
-  "symbol": "AAPL",
-  "price": 1345.22,
-  "timestamp": 1692623430.45
-}
+       {
+         "symbol": "AAPL",
+         "price": 1345.22,
+         "timestamp": 1692623430.45
+       }
 - **Cloud Run / Cloud Function** → Publishes stock price events into Pub/Sub  
 - **Pub/Sub** → Message broker for streaming stock data  
 - **Dataflow (Apache Beam)** → Processes stock data in real time and computes rolling averages  
@@ -35,90 +35,95 @@ This project implements a **real-time ETL (Extract–Transform–Load) streaming
 
 ### 1. Prerequisites
 
-Terraform
-Google Cloud SDK
-Apache Beam
-Airflow
+- Terraform
+- Google Cloud SDK
+- Apache Beam
+- Airflow
 
 Enable GCP APIs:
-Dataflow API
-Pub/Sub API
-BigQuery API
-Cloud Run API
+Dataflow API , 
+Pub/Sub API ,
+BigQuery API ,
+Cloud Run API 
 
 ### 2. Provision Infrastructure with Terraform
 
-cd Terraform/
-terraform init
-terraform apply
+     cd Terraform/
+     terraform init
+     terraform apply
 
 
-This sets up:
-
-Pub/Sub topic (stock_prices)
-BigQuery dataset & table (stock_data.stock_prices_agg)
-Required service accounts & permissions
+This sets up:  
+Pub/Sub topic (stock_prices)  
+BigQuery dataset & table (stock_data.stock_prices_agg)  
+Required service accounts & permissions  
 
 ### 3. Deploy Stock Publisher (Cloud Run)
 
-gcloud builds submit --tag gcr.io/$PROJECT_ID/stock-publisher ./CloudRun
-gcloud run deploy stock-publisher \
-  --image gcr.io/$PROJECT_ID/stock-publisher \
-  --platform managed \
-  --region us-central1 \
-  --allow-unauthenticated
+     gcloud builds submit --tag gcr.io/$PROJECT_ID/stock-publisher ./CloudRun
+
+     gcloud run deploy stock-publisher \
+
+        --image gcr.io/$PROJECT_ID/stock-publisher \
+  
+        --platform managed \
+  
+        --region us-central1 \
+  
+        --allow-unauthenticated
 
 ### 4. Run Airflow DAG
 
 Copy stock_streaming_pipeline.py to your Airflow dags/ folder.
 
-The DAG performs:
-Calls Cloud Run / Function to publish stock events.
-Submits Dataflow job (dataflow_job.py).
-Runs a BigQuery check to validate recent data.
-Trigger DAG via Airflow UI or CLI:
-airflow dags trigger stock_streaming_pipeline
+The DAG performs:  
+Calls Cloud Run / Function to publish stock events.  
+Submits Dataflow job (dataflow_job.py).  
+Runs a BigQuery check to validate recent data.  
+Trigger DAG via Airflow UI or CLI:  
+airflow dags trigger stock_streaming_pipeline  
 
 ### 5. Monitor
 
 Dataflow job logs: GCP Dataflow Console
 
 BigQuery results:
-SELECT *
-FROM `PROJECT_ID.stock_data.stock_prices_agg`
-ORDER BY window_end DESC
-LIMIT 10;
+
+    SELECT *
+    FROM `PROJECT_ID.stock_data.stock_prices_agg`
+    ORDER BY window_end DESC
+    LIMIT 10;
 
 ### Key Components
 
-CloudRun/main.py
-Publishes random stock prices into Pub/Sub:
+CloudRun/main.py  
+Publishes random stock prices into Pub/Sub:  
 
-record = {
-    'symbol': random.choice(['AAPL', 'GOOGL', 'MSFT', 'AMZN']),
-    'price': round(random.uniform(100, 1500), 2),
-    'timestamp': time.time()
-}
+    record = {
+         'symbol': random.choice(['AAPL', 'GOOGL', 'MSFT', 'AMZN']),
+         'price': round(random.uniform(100, 1500), 2),
+         'timestamp': time.time()
+    }
 publisher.publish(topic_path, json.dumps(record).encode('utf-8'))
 
 ========================================================================
 
-dataflow_job.py
-Beam pipeline:
+dataflow_job.py  
+Beam pipeline:  
 
-Reads from Pub/Sub
-Parses JSON → windows into 1-minute intervals
-Aggregates average price per symbol
-Writes results to BigQuery
+Reads from Pub/Sub  
+Parses JSON → windows into 1-minute intervals  
+Aggregates average price per symbol  
+Writes results to BigQuery  
 
 =======================================================================
 
-stock_streaming_pipeline.py
-Airflow DAG flow:
+stock_streaming_pipeline.py  
+Airflow DAG flow:  
 
-Publish stock data → Cloud Function (HttpOperator)
-Run Dataflow job → DataflowCreatePythonJobOperator
-Check BigQuery → BigQueryCheckOperator
+Publish stock data → Cloud Function (HttpOperator)  
+Run Dataflow job → DataflowCreatePythonJobOperator  
+Check BigQuery → BigQueryCheckOperator  
 
 ### Cleanup
 
