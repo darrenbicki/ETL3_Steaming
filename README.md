@@ -22,6 +22,9 @@ This project implements a **real-time ETL (Extract–Transform–Load) streaming
 
 ## Architecture
 
+![ETL3 Streaming](https://github.com/user-attachments/assets/32408787-6c39-4cb0-ac43-4508f3d7a578)
+
+
 ## Repository Structure
 
 <img width="747" height="330" alt="image" src="https://github.com/user-attachments/assets/7517987e-55a3-4ef9-8c8f-16569eb0ec48" />
