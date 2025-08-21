@@ -1,9 +1,9 @@
 # ETL3 Streaming Pipeline
 
 ##  Overview
-This project implements a **real-time ETL (Extract–Transform–Load) streaming pipeline** on **Google Cloud Platform (GCP)** using:
+This project implements a **real-time ETL (Extract–Transform–Load) streaming pipeline** on **Google Cloud Platform (GCP)** for Stock data
 
-- generates random stock trade events by picking a stock ticker (AAPL, GOOGL, MSFT, AMZN) and assigning it a random price.
+- generates random stock trade events by picking a stock ticker (AAPL, GOOGL, MSFT, AMZN) and assigning it a random price. ( This can be changed to use real stock data , random data is generated here for simplicity )
 -- Each event looks like:
 
      {
